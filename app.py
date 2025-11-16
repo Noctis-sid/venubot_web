@@ -8,7 +8,7 @@ import pickle
 import numpy as np
 import nltk
 from nltk.stem import WordNetLemmatizer
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory, abort
