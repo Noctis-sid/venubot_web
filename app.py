@@ -22,6 +22,26 @@ WORDS_PKL = BASE_DIR / "words.pkl"
 CLASSES_PKL = BASE_DIR / "classes.pkl"
 MODEL_FILE = BASE_DIR / "venubot_model.h5"
 AVATAR_PATH = BASE_DIR / "static" / "Avtar.png"
+import requests
+def _download_file(url, dest_path, timeout=120):
+    print(f"Downloading {url} -> {dest_path} ...")
+    with requests.get(url, stream=True, timeout=timeout) as r:
+        r.raise_for_status()
+        with open(dest_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+    print(f"Downloaded {dest_path}")
+
+if not MODEL_FILE.exists():
+    model_url = os.environ.get("MODEL_URL")
+    if model_url:
+        try:
+            _download_file(model_url, MODEL_FILE)
+        except Exception as e:
+            print("Failed to download model:", e)
+
+# same for WORDS_PKL and CLASSES_PKL using WORDS_URL and CLASSES_URL
 
 # ---------------- Model download (if missing) ----------------
 if not MODEL_FILE.exists():
