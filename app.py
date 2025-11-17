@@ -1,4 +1,4 @@
-# app.py (updated for deployment - use relative paths)
+# app.py (Gemini / Google Gen AI version + USER NAME MEMORY)
 import time
 import traceback
 import os
@@ -8,77 +8,30 @@ import pickle
 import numpy as np
 import nltk
 from nltk.stem import WordNetLemmatizer
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory, abort
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# ---------------- Paths (relative to this file) ----------------
+# ---------------- Paths ----------------
 BASE_DIR = Path(__file__).resolve().parent
-INTENTS_PATH = BASE_DIR / "intents.json"
-WORDS_PKL = BASE_DIR / "words.pkl"
-CLASSES_PKL = BASE_DIR / "classes.pkl"
-MODEL_FILE = BASE_DIR / "venubot_model.h5"
-AVATAR_PATH = BASE_DIR / "static" / "Avtar.png"
-import requests
-def _download_file(url, dest_path, timeout=120):
-    print(f"Downloading {url} -> {dest_path} ...")
-    with requests.get(url, stream=True, timeout=timeout) as r:
-        r.raise_for_status()
-        with open(dest_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-    print(f"Downloaded {dest_path}")
+INTENTS_PATH = Path(r'D:\venubot_web\intents.json')
+WORDS_PKL = Path(r'D:\venubot_web\words.pkl')
+CLASSES_PKL = Path(r'D:\venubot_web\classes.pkl')
+MODEL_FILE = Path(r'D:\venubot_web\venubot_model.h5')
+AVATAR_PATH = Path(r'D:\venubot_web\static\Avtar.png')
 
-if not MODEL_FILE.exists():
-    model_url = os.environ.get("MODEL_URL")
-    if model_url:
-        try:
-            _download_file(model_url, MODEL_FILE)
-        except Exception as e:
-            print("Failed to download model:", e)
-
-# same for WORDS_PKL and CLASSES_PKL using WORDS_URL and CLASSES_URL
-
-# ---------------- Model download (if missing) ----------------
-if not MODEL_FILE.exists():
-    model_url = os.environ.get("MODEL_URL")
-    if model_url:
-        import requests, sys
-        print("Downloading model from MODEL_URL...")
-        try:
-            r = requests.get(model_url, stream=True, timeout=60)
-            r.raise_for_status()
-            with open(MODEL_FILE, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-            print("Model downloaded.")
-        except Exception as e:
-            print("Failed to download model:", e)
-            # let later validation raise a clear FileNotFoundError if needed
-    else:
-        # don't raise here — allow validation step to report missing model in a single place
-        pass
-
-# ---------------- Validate files (model handled separately above) ----------------
+# ---------------- Validate files ----------------
 missing = []
-for file in [INTENTS_PATH, WORDS_PKL, CLASSES_PKL, AVATAR_PATH]:
+for file in [INTENTS_PATH, WORDS_PKL, CLASSES_PKL, MODEL_FILE, AVATAR_PATH]:
     if not file.exists():
-        missing.append(str(file.relative_to(BASE_DIR)))
-
-# If model still missing after attempted download, add to missing list
-if not MODEL_FILE.exists():
-    missing.append(str(MODEL_FILE.relative_to(BASE_DIR)))
-
+        missing.append(str(file))
 if missing:
-    # Fail fast with clear message when running on a platform log
     raise FileNotFoundError(
-        "❌ Missing required files in project root:\n" + "\n".join(missing) +
-        "\n\nPlace them in the same folder as app.py, set MODEL_URL env var, or update the paths."
+        "❌ Missing required files:\n" + "\n".join(missing) +
+        "\n\nPlease make sure all files exist in the venubot_web folder."
     )
 
 # ---------------- NLTK + model load ----------------
@@ -116,7 +69,15 @@ if GEMINI_API_KEY:
 user_name = None
 
 def extract_user_name(message):
+    """
+    Detect user's name from:
+    - "I am Sid"
+    - "I'm Sid"
+    - "hi I'm Sid"
+    - "my name is Sid"
+    """
     msg = message.lower()
+
     triggers = ["i am ", "i'm ", "im ", "my name is "]
     for t in triggers:
         if t in msg:
@@ -126,19 +87,33 @@ def extract_user_name(message):
                 return name.capitalize()
     return None
 
+
+# ---------------- updated personalize_reply ----------------
 def personalize_reply(reply):
+    """
+    Add name to greeting-like responses, but avoid duplicating the name.
+    If the user's name already appears in the reply (case-insensitive), return as-is.
+    """
     global user_name
     if not user_name:
         return reply
+
+    # If name already present in the reply, do nothing
     if user_name.lower() in reply.lower():
         return reply
+
     greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "good night"]
     reply_low = reply.lower()
+
     for g in greetings:
         if reply_low.startswith(g):
+            # replace only the first occurrence (preserve capitalization of greeting)
             return reply.replace(reply[:len(g)], f"{g.capitalize()} {user_name}", 1)
+
     return reply
 
+
+# ---------------- Prediction helpers ----------------
 def clean_up_sentence(sentence):
     sentence_words = nltk.word_tokenize(sentence)
     return [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
@@ -162,13 +137,16 @@ def get_response_from_intent_tag(tag):
             return random.choice(intent.get('responses'))
     return "Hmm, I didn't understand that."
 
+# ---------------- Gemini fallback ----------------
 def generate_with_gemini(user_message, model_name="gemini-2.5-flash"):
     if not gemini_client:
         raise RuntimeError("Gemini not available")
+
     system_prompt = (
         "You are VenuBot, a friendly Indian flute-themed chatbot. "
         "Keep replies short, sweet, and polite."
     )
+
     try:
         response = gemini_client.models.generate_content(
             model=model_name,
@@ -189,6 +167,7 @@ def local_fallback(message):
         return "Could you say a bit more?"
     return f"I didn't understand that, {user_name or 'friend'}. Try rephrasing it."
 
+# ---------------- Options logic ----------------
 FIXED_OPTION_TAGS = ['fun_fact', 'ragas_info', 'indian_flute_players']
 
 def sample_option_label(intent):
@@ -201,13 +180,18 @@ def build_options():
     all_intents = intents["intents"]
     tag_to_intent = {i["tag"]: i for i in all_intents}
     options = [tag_to_intent[tag] for tag in FIXED_OPTION_TAGS if tag in tag_to_intent]
+
     remaining = [i for i in all_intents if i not in options]
     if remaining:
         options.append(random.choice(remaining))
+
+    # Ensure 4
     while len(options) < 4 and remaining:
         options.append(remaining.pop())
+
     return options[:4]
 
+# ---------------- Routes ----------------
 @app.route("/")
 def home():
     hour = datetime.now().astimezone().hour
@@ -219,12 +203,14 @@ def home():
         greet = "Good evening"
     else:
         greet = "Good night"
+
     return render_template("index.html", avatar_url="/avatar", startup_greeting=greet)
 
 @app.route("/avatar")
 def avatar():
     return send_from_directory(AVATAR_PATH.parent, AVATAR_PATH.name)
 
+# Test Gemini
 @app.route("/test_gemini")
 def test_gemini():
     if not gemini_client:
@@ -238,29 +224,42 @@ def test_gemini():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
 
+# Main Chat Route
 @app.route("/chat", methods=["POST"])
 def chat():
     global user_name
+
     data = request.get_json() or {}
     message = (data.get("message") or "").strip()
     option_tag = data.get("option_tag")
 
+    # Step A: detect name first
     detected_name = extract_user_name(message)
     if detected_name:
         user_name = detected_name
+
+        # Try to use the friendly flute response from intents if available
         flute_reply = None
         for it in intents.get('intents', []):
             if it.get('tag') == 'love_flute_yes':
                 flute_reply = random.choice(it.get('responses', []))
                 break
+
         if not flute_reply:
             flute_reply = "That's wonderful! 🎵 It's great to meet someone who appreciates the soothing sound of the flute."
+
+        # Build greeting with name once
         bot_text = f"Hi {user_name}! {flute_reply}"
+
+        # Personalize (safe because personalize_reply won't duplicate the name)
         bot_text = personalize_reply(bot_text)
+
+        # Build options and return immediately
         options = build_options()
         options_json = [{"id": str(i+1), "label": sample_option_label(opt), "tag": opt.get("tag")} for i, opt in enumerate(options)]
         return jsonify({"bot_message": bot_text, "options": options_json})
 
+    # Normal flow if no immediate name-intro
     try:
         if option_tag:
             bot_text = get_response_from_intent_tag(option_tag)
@@ -281,20 +280,25 @@ def chat():
                         bot_text = local_fallback(message)
             else:
                 bot_text = "🎶 Say something and I'll sing back!"
+
+        # Personalize the bot_text for future replies (idempotent)
         bot_text = personalize_reply(bot_text)
+
     except Exception as e:
         traceback.print_exc()
         bot_text = "Sorry — server encountered an error. Try again."
 
+    # Build options and return
     options = build_options()
     options_json = [{"id": str(i+1), "label": sample_option_label(opt), "tag": opt.get("tag")} for i,opt in enumerate(options)]
     return jsonify({"bot_message": bot_text, "options": options_json})
 
+
+# ---------------- Run ----------------
 if __name__ == "__main__":
     print("✅ Model and intents loaded.")
     if _gemini_ready:
         print("✅ Gemini ready.")
     else:
         print("⚠️ Gemini not available — using fallback.")
-    # listen on 0.0.0.0 so the host can route traffic to the container
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)
