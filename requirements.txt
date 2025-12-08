@@ -3,3 +3,5 @@ tensorflow==2.18.0
 numpy==1.23.5
 nltk==3.9.2
 h5py==3.8.0
+google-genai      # for Gemini (optional but recommended)
+gunicorn          # for production server on Azure

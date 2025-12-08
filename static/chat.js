@@ -1,4 +1,4 @@
-// static/chat.js (updated, robust)
+// static/chat.js (updated: render HTML & embed YouTube Shorts)
 document.addEventListener("DOMContentLoaded", () => {
   const messagesEl = document.getElementById("messages");
   const optionsEl = document.getElementById("options");
@@ -6,21 +6,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputEl = document.getElementById("message-input");
   const startupGreetingEl = document.getElementById("startup-greeting");
 
-  let lastOptions = []; // holds latest options {id, label, tag}
-
-  function appendMessage(text, who = "bot") {
+  function appendMessage(text, who = "bot", allowHTML = false) {
     const wrap = document.createElement("div");
     wrap.className = who + " message";
     const b = document.createElement("div");
     b.className = "bubble";
-    b.textContent = text;
+    if (allowHTML) {
+      b.innerHTML = text;
+      // attach handlers for yt-short anchors inside this bubble
+      const anchors = b.querySelectorAll("a.yt-short");
+      anchors.forEach(a => {
+        a.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          const href = a.getAttribute("href");
+          showEmbeddedShort(href, a.textContent || "Video");
+        });
+      });
+    } else {
+      b.textContent = text;
+    }
     wrap.appendChild(b);
     messagesEl.appendChild(wrap);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
+  function showEmbeddedShort(shortUrl, title = "") {
+    let vid = null;
+    try {
+      const url = new URL(shortUrl);
+      const pathParts = url.pathname.split("/");
+      const idx = pathParts.indexOf("shorts");
+      if (idx >= 0 && pathParts.length > idx + 1) {
+        vid = pathParts[idx + 1];
+      } else {
+        vid = url.searchParams.get("v");
+      }
+    } catch (e) {
+      const m = shortUrl.match(/shorts\/([A-Za-z0-9_-]+)/);
+      if (m) vid = m[1];
+    }
+    if (!vid) {
+      appendMessage("Sorry — couldn't open that video. Invalid link.", "bot");
+      return;
+    }
+
+    const embed = `https://www.youtube.com/embed/${vid}?autoplay=1&controls=1&rel=0`;
+    const wrap = document.createElement("div");
+    wrap.className = "bot message";
+    const b = document.createElement("div");
+    b.className = "bubble video-bubble";
+    b.innerHTML = `<div class="video-title">${escapeHtml(title)}</div>
+                   <div class="video-wrapper">
+                     <iframe src="${embed}" title="YouTube Short" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                   </div>`;
+    wrap.appendChild(b);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function escapeHtml(unsafe) {
+    return String(unsafe).replace(/[&<"'>]/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
   function showOptions(options) {
-    lastOptions = options;
     optionsEl.innerHTML = "";
     if (!options || options.length === 0) return;
     options.forEach(opt => {
@@ -31,26 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => selectOption(opt));
       optionsEl.appendChild(btn);
     });
-  }
-
-  function setTyping(on = true) {
-    // manage a small typing indicator
-    let typingEl = document.getElementById("typing-indicator");
-    if (on) {
-      if (!typingEl) {
-        typingEl = document.createElement("div");
-        typingEl.id = "typing-indicator";
-        typingEl.className = "bot message";
-        const b = document.createElement("div");
-        b.className = "bubble";
-        b.textContent = "VenuBot is thinking 🎶...";
-        typingEl.appendChild(b);
-        messagesEl.appendChild(typingEl);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-    } else {
-      if (typingEl) typingEl.remove();
-    }
   }
 
   async function postMessage(payload) {
@@ -72,61 +102,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function selectOption(opt) {
     appendMessage(opt.label, "user");
-    setTyping(true);
-    try {
-      const resp = await postMessage({ option_tag: opt.tag, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-      setTyping(false);
-      appendMessage(resp.bot_message, "bot");
-      showOptions(resp.options.map(o => ({ label: o.label, tag: o.tag, id: o.id })));
-      inputEl.value = "";
-    } catch (e) {
-      setTyping(false);
-      appendMessage("Oops — something went wrong. Try again.", "bot");
-    }
+    const resp = await postMessage({ option_tag: opt.tag });
+    const isHtml = /<a\s+class="yt-short"/i.test(resp.bot_message) || /<div|<ol|<li/i.test(resp.bot_message);
+    appendMessage(resp.bot_message, "bot", isHtml);
+    showOptions(resp.options || []);
   }
 
   async function sendMessage(event) {
-    // prevent default form submit (this stops the page reloading)
     if (event && event.preventDefault) event.preventDefault();
-
     const text = inputEl.value.trim();
     if (!text) return;
-
     appendMessage(text, "user");
     inputEl.value = "";
     inputEl.disabled = true;
-    setTyping(true);
 
-    try {
-      const resp = await postMessage({ message: text, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-      setTyping(false);
-      appendMessage(resp.bot_message, "bot");
-      showOptions(resp.options.map(o => ({ label: o.label, tag: o.tag, id: o.id })));
-    } catch (err) {
-      setTyping(false);
-      appendMessage("Sorry, something went wrong. Please try again.", "bot");
-    } finally {
-      inputEl.disabled = false;
-      inputEl.focus();
-    }
+    const resp = await postMessage({ message: text });
+    const isHtml = /<a\s+class="yt-short"/i.test(resp.bot_message) || /<div|<ol|<li/i.test(resp.bot_message);
+    appendMessage(resp.bot_message, "bot", isHtml);
+    showOptions(resp.options || []);
+    inputEl.disabled = false;
+    inputEl.focus();
   }
 
-  // hook up form submit safely
   inputForm.addEventListener("submit", sendMessage);
 
-  // initialize: request initial options and startup bot message from server
   (async function init() {
-    // Show startup greeting only once (provided by template)
     if (startupGreetingEl && startupGreetingEl.textContent.trim()) {
       appendMessage(startupGreetingEl.textContent.trim() + "!", "bot");
     }
-
-    setTyping(true);
-    const resp = await postMessage({ message: "", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-    setTyping(false);
-    // server's initial bot_message may be a prompt like "Say something..." or a dynamic greeting
-    appendMessage(resp.bot_message, "bot");
-    showOptions(resp.options.map(o => ({ label: o.label, tag: o.tag, id: o.id })));
+    const resp = await postMessage({ message: "" });
+    const isHtml = /<a\s+class="yt-short"/i.test(resp.bot_message) || /<div|<ol|<li/i.test(resp.bot_message);
+    appendMessage(resp.bot_message, "bot", isHtml);
+    showOptions(resp.options || []);
   })();
-
 });
+

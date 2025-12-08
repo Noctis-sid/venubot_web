@@ -98,6 +98,125 @@
         "Fun fact: The flute is the only woodwind instrument that doesn’t actually use a reed. It’s all breath and magic! 💨✨"
       ],
       "context": [""]
+    },
+    {
+      "tag": "bansuri_materials",
+      "patterns": [
+        "what is bansuri made of",
+        "bansuri material",
+        "which bamboo is used for making flute",
+        "how is a bansuri constructed"
+      ],
+      "responses": [
+        "Traditional bansuris are made from strong, straight bamboo such as Assam or Pahadi bamboo. The maker measures holes and nodes carefully — craftsmanship matters! 🎋"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "bansuri_types",
+      "patterns": [
+        "types of bansuri",
+        "kinds of indian flutes",
+        "how many types of bansuri",
+        "difference between north indian flute and south indian flute"
+      ],
+      "responses": [
+        "North Indian bansuri (Hindustani) is side-blown with 6–7 holes; South Indian venu (Carnatic) often has 8 holes and a slightly different fingering and tonal quality. 🎵"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "bansuri_care",
+      "patterns": [
+        "how to take care of a bansuri",
+        "bansuri maintenance",
+        "how to store a flute",
+        "tips to protect bansuri"
+      ],
+      "responses": [
+        "Keep your bansuri dry and away from extreme heat. Wrap in cloth or use a case. Avoid leaving it in cars or direct sunlight. 🌿"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "flute_raags",
+      "patterns": [
+        "best ragas for flute",
+        "which raga sounds good on bansuri",
+        "flute ragas",
+        "ragas played on flute"
+      ],
+      "responses": [
+        "Ragas like Yaman, Bhupali, Hamsadhwani and Brindavani Sarang sound beautiful on the bansuri. Pahadi and Durga are also lovely for flute. 🎼"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "bansuri_learning",
+      "patterns": [
+        "how to learn bansuri",
+        "how can i start learning flute",
+        "tips to learn bansuri",
+        "is bansuri hard to learn"
+      ],
+      "responses": [
+        "Start with breath control, basic notes (Sa Re Ga), and short daily practice. Breathe slowly and practice long notes to build control. 🌬️"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "bansuri_frequencies",
+      "patterns": [
+        "what is c sharp flute",
+        "best scale for beginners",
+        "which flute scale should i buy",
+        "bansuri scales explained"
+      ],
+      "responses": [
+        "Beginners often choose a C or C# medium bansuri. Lower (D, C) are deeper; higher (A, B) are brighter. Choose based on comfort and vocal range. 🎶"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "krishna_flute",
+      "patterns": [
+        "krishna flute facts",
+        "story behind krishna flute",
+        "why is krishna shown with flute",
+        "krishna and bansuri"
+      ],
+      "responses": [
+        "Krishna’s Murali symbolizes divine love — its music is said to enchant nature and beings. The flute represents an invitation to beauty and devotion. 💙"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "flute_benefits",
+      "patterns": [
+        "benefits of playing flute",
+        "why should i learn bansuri",
+        "is flute good for health",
+        "advantages of flute playing"
+      ],
+      "responses": [
+        "Playing flute strengthens breath control, reduces stress, improves focus and brings emotional calm. It's musical therapy. ✨"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "content_yes",
+      "patterns": ["yes", "yeah", "sure", "please show", "show me", "yes please"],
+      "responses": [
+        "<div>Great — pick one to watch (I'll play it here):<br/><ol><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/Fvtlt47ShhE?si=3h8BEx8GCKiT5hg9\">1. Bansuri - Short 1</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/EyqqU48R-OM?si=oJo3GAqMy_GjccwM\">2. Bansuri - Short 2</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/OJdxDEIsP_0?si=CoeabMTIi3X2njzh\">3. Bansuri - Short 3</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/kXiRPqGMsY4?si=dDcrsWMXxj7RboB-\">4. Bansuri - Short 4</a></li></ol></div>"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "content_no",
+      "patterns": ["no", "not now", "maybe later", "no thanks"],
+      "responses": ["No problem — if you'd like later, just say 'show me content' and I'll bring them up. 🎵"],
+      "context": [""]
     }
   ]
 }
+

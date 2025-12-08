@@ -19,20 +19,15 @@
     <div class="chat-area">
       <div id="messages" class="messages"></div>
 
-
       <div id="options" class="options"></div>
 
-      <form id="input-form" class="input-area" onsubmit="return sendMessage();">
+      <form id="input-form" class="input-area">
         <input id="message-input" autocomplete="off" placeholder="Type a message..." />
         <button type="submit">Send</button>
       </form>
     </div>
   </div>
 
-  <script>
-    // pass timezone to backend via JS
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
-  </script>
   <script src="/static/chat.js"></script>
 </body>
 </html>
