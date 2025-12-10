@@ -1,4 +1,5 @@
-/* static/styles.css - UPDATED */
+/* static/styles.css - RESPONSIVE VERSION */
+
 /* Palette */
 :root{
   --bg: #f5f7fb;
@@ -30,6 +31,7 @@ body{
   border-radius:14px;
   overflow:hidden;
   background: linear-gradient(180deg,#ffffff, #fbfffe);
+  min-height: calc(100vh - 72px); /* helps stretch on tall screens */
 }
 
 /* Sidebar */
@@ -73,7 +75,6 @@ body{
 /* Message bubbles */
 .message{display:flex;}
 .message .bubble{
-  /* increased max width so video/bubbles have more room */
   max-width:85%;
   padding:12px 14px;
   border-radius:var(--bubble-radius);
@@ -117,7 +118,10 @@ body{
   transition: transform .08s ease, box-shadow .12s ease;
   font-size:13px;
 }
-.option-btn:hover{ transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2,6,23,0.06); }
+.option-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2,6,23,0.06);
+}
 
 /* Input area */
 .input-area{
@@ -146,10 +150,7 @@ button[type="submit"]{
   font-weight:600;
 }
 
-/* ---- Video embed styles (portrait-friendly for YouTube Shorts) ----
-   Portrait aspect ratio (9:16) which results in padding-bottom: 177.78%
-   Width is responsive, with sensible max on desktop.
-*/
+/* ---- Video embed styles (portrait-friendly for YouTube Shorts) ---- */
 .video-bubble {
   padding: 8px 0 0 0;
   display: flex;
@@ -168,14 +169,14 @@ button[type="submit"]{
 
 /* Container that preserves a portrait aspect ratio */
 .video-wrapper {
-  width: min(560px, 86vw);    /* large but not full-bleed on desktop, responsive on small screens */
+  width: min(560px, 86vw);
   max-width: 86vw;
   margin-top: 4px;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
   position: relative;
-  padding-bottom: 177.78%;    /* 9:16 portrait -> 16/9 *100 = 177.78% */
+  padding-bottom: 177.78%;    /* 9:16 portrait */
   box-shadow: 0 10px 30px rgba(2,6,23,0.08);
 }
 
@@ -191,7 +192,7 @@ button[type="submit"]{
   background:#000;
 }
 
-/* Optional close button placed over the video (JS can toggle .hidden on the parent) */
+/* Optional close button */
 .video-close {
   position: absolute;
   right: 8px;
@@ -211,26 +212,98 @@ button[type="submit"]{
 }
 .video-close:hover { background: rgba(0,0,0,0.6); }
 
-/* If the message bubble contains both text and video, align nicely */
 .bubble .video-bubble .video-title { padding-left: 4px; }
 
-/* Smaller devices: increase relative width so player looks good but leaves space for input */
-@media (max-width: 460px) {
-  .message .bubble { max-width: 94%; padding:10px 12px; }
-  .video-wrapper { width: 92vw; padding-bottom: 177.78%; border-radius: 10px; }
-  .sidebar { display: none; } /* hide sidebar on very small screens for more chat space */
-  .chat-wrapper { margin: 12px; max-width: calc(100% - 24px); }
-  .input-area { gap:6px; padding-top:10px; }
+/* ---------- RESPONSIVE BREAKPOINTS ---------- */
+
+/* Tablets / small laptops */
+@media (max-width: 900px) {
+  body { background:#ffffff; }
+
+  .chat-wrapper{
+    flex-direction:column;
+    margin:0;
+    max-width:100%;
+    border-radius:0;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    width:100%;
+    border-right:none;
+    border-bottom:1px solid #eef2f6;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:14px;
+    text-align:left;
+    padding:16px 18px;
+  }
+
+  .sidebar img{
+    width:72px;
+    height:72px;
+    border-width:4px;
+  }
+
+  .sidebar h2{ margin-bottom:2px; }
+  .sidebar p.sub{ margin-top:2px; }
+
+  .chat-area{
+    padding:14px 12px 16px;
+  }
+
+  .messages{
+    padding:10px;
+  }
 }
 
-/* Large screens: allow a slightly bigger player */
+/* Phones */
+@media (max-width: 480px) {
+  .chat-wrapper{
+    margin:0;
+    border-radius:0;
+  }
+
+  .sidebar{
+    padding:12px 14px;
+  }
+
+  .message .bubble {
+    max-width:94%;
+    padding:10px 12px;
+  }
+
+  .video-wrapper{
+    width:100%;
+    max-width:100%;
+    padding-bottom:177.78%;
+    border-radius:10px;
+  }
+
+  .input-area{
+    gap:6px;
+    padding-top:10px;
+  }
+
+  #message-input{
+    font-size:13px;
+  }
+}
+
+/* Very large screens: slightly bigger player */
 @media (min-width: 1200px) {
-  .video-wrapper { width: min(760px, 72vw); padding-bottom: 177.78%; }
-  .message .bubble { max-width: 78%; }
+  .video-wrapper {
+    width: min(760px, 72vw);
+    padding-bottom: 177.78%;
+  }
+  .message .bubble { max-width:78%; }
 }
 
 /* Accessibility focus states */
-.option-btn:focus, button[type="submit"]:focus, .video-close:focus {
+.option-btn:focus,
+button[type="submit"]:focus,
+.video-close:focus {
   outline: 3px solid rgba(14,165,160,0.18);
   outline-offset: 2px;
   box-shadow: 0 8px 24px rgba(14,165,160,0.08);
