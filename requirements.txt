@@ -1,7 +1,5 @@
-﻿Flask==3.1.2
+﻿flask==2.3.3
+numpy>=1.26,<2.1
 tensorflow==2.18.0
-numpy
-nltk==3.9.2
-h5py>=3.11.0
-google-genai      # for Gemini (optional but recommended)
-gunicorn          # for production server on Azure
+nltk
+gunicorn
