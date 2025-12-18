@@ -5,3 +5,5 @@ nltk==3.9.2
 h5py>=3.11.0
 google-genai      # for Gemini (optional but recommended)
 gunicorn          # for production server on Azure
+pytz
+git add .
