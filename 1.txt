@@ -1,4 +1,4 @@
-## app.py (Gemini / Google Gen AI version + USER NAME MEMORY)
+# app.py (Gemini / Google Gen AI version + USER NAME MEMORY)
 import time
 import traceback
 import os
@@ -17,11 +17,12 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 # ---------------- Paths ----------------
 BASE_DIR = Path(__file__).resolve().parent
-INTENTS_PATH = Path(r'D:\venubot_web\intents.json')
-WORDS_PKL = Path(r'D:\venubot_web\words.pkl')
-CLASSES_PKL = Path(r'D:\venubot_web\classes.pkl')
-MODEL_FILE = Path(r'D:\venubot_web\venubot_model.h5')
-AVATAR_PATH = Path(r'D:\venubot_web\static\Avtar.png')
+INTENTS_PATH = BASE_DIR / "intents.json"
+WORDS_PKL = BASE_DIR / "words.pkl"
+CLASSES_PKL = BASE_DIR / "classes.pkl"
+MODEL_FILE = BASE_DIR / "venubot_model.h5"
+AVATAR_PATH = BASE_DIR / "static" / "Avtar.png"
+
 
 # ---------------- Validate files ----------------
 missing = []
@@ -50,7 +51,7 @@ words = pickle.load(open(WORDS_PKL, "rb"))
 classes = pickle.load(open(CLASSES_PKL, "rb"))
 model = load_model(MODEL_FILE)
 
-# ---------------- Gemini setup ----------------
+# ---------------- Gemini setup (optional) ----------------
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 gemini_client = None
 _gemini_ready = False
@@ -87,31 +88,19 @@ def extract_user_name(message):
                 return name.capitalize()
     return None
 
-
-# ---------------- updated personalize_reply ----------------
+# ---------------- personalize_reply ----------------
 def personalize_reply(reply):
-    """
-    Add name to greeting-like responses, but avoid duplicating the name.
-    If the user's name already appears in the reply (case-insensitive), return as-is.
-    """
     global user_name
     if not user_name:
         return reply
-
-    # If name already present in the reply, do nothing
     if user_name.lower() in reply.lower():
         return reply
-
     greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "good night"]
     reply_low = reply.lower()
-
     for g in greetings:
         if reply_low.startswith(g):
-            # replace only the first occurrence (preserve capitalization of greeting)
             return reply.replace(reply[:len(g)], f"{g.capitalize()} {user_name}", 1)
-
     return reply
-
 
 # ---------------- Prediction helpers ----------------
 def clean_up_sentence(sentence):
@@ -135,18 +124,16 @@ def get_response_from_intent_tag(tag):
     for intent in intents.get('intents', []):
         if intent.get('tag') == tag:
             return random.choice(intent.get('responses'))
-    return "Hmm, I didn't understand that."
+    return "Sorry, I can't understand your query. You can ask anything from the suggestions below."
 
 # ---------------- Gemini fallback ----------------
 def generate_with_gemini(user_message, model_name="gemini-2.5-flash"):
     if not gemini_client:
         raise RuntimeError("Gemini not available")
-
     system_prompt = (
         "You are VenuBot, a friendly Indian flute-themed chatbot. "
         "Keep replies short, sweet, and polite."
     )
-
     try:
         response = gemini_client.models.generate_content(
             model=model_name,
@@ -163,33 +150,59 @@ def generate_with_gemini(user_message, model_name="gemini-2.5-flash"):
         raise
 
 def local_fallback(message):
-    if len(message.split()) <= 2:
-        return "Could you say a bit more?"
-    return f"I didn't understand that, {user_name or 'friend'}. Try rephrasing it."
+    # Unified fallback message (always return this for unknown inputs)
+    return "Sorry, I can't understand your query. You can ask anything from the suggestions below."
 
-# ---------------- Options logic ----------------
+# ---------------- Options logic (PRIORITIZE content) ----------------
+# keep these tags as the helpful defaults
 FIXED_OPTION_TAGS = ['fun_fact', 'ragas_info', 'indian_flute_players']
+# PRIORITY tag set to the intent that provides the content links in your intents.json
+PRIORITY_OPTION_TAG = 'content_yes'  # intentionally matches your intents.json tag
 
 def sample_option_label(intent):
+    """
+    Deterministic, friendly label for options.
+    Priority tag uses a fixed label, others use the first pattern or fallback to tag.
+    """
+    tag = intent.get("tag", "")
+    if tag == PRIORITY_OPTION_TAG:
+        return "Show me related videos"
     patterns = intent.get("patterns", [])
     if patterns:
-        return random.choice(patterns).strip().capitalize()
-    return intent["tag"].replace("_", " ").capitalize()
+        for p in patterns:
+            p_clean = p.strip()
+            if len(p_clean) > 2:
+                return p_clean.capitalize()
+        return patterns[0].strip().capitalize()
+    return tag.replace("_", " ").capitalize()
 
 def build_options():
-    all_intents = intents["intents"]
+    """
+    Always show 'content_yes' first.
+    Then randomly pick ANY 3 other intents from the intents.json file.
+    No repeats. Pure randomness.
+    """
+    all_intents = intents.get("intents", [])
     tag_to_intent = {i["tag"]: i for i in all_intents}
-    options = [tag_to_intent[tag] for tag in FIXED_OPTION_TAGS if tag in tag_to_intent]
 
-    remaining = [i for i in all_intents if i not in options]
-    if remaining:
-        options.append(random.choice(remaining))
+    options = []
 
-    # Ensure 4
-    while len(options) < 4 and remaining:
-        options.append(remaining.pop())
+    # 1) Add priority tag first
+    if PRIORITY_OPTION_TAG in tag_to_intent:
+        options.append(tag_to_intent[PRIORITY_OPTION_TAG])
 
-    return options[:4]
+    # 2) Remove the priority one from the pool
+    remaining = [i for i in all_intents if i.get("tag") != PRIORITY_OPTION_TAG]
+
+    # 3) Randomly pick 3 unique intents
+    if len(remaining) >= 3:
+        selected = random.sample(remaining, 3)
+    else:
+        selected = remaining  # if less than 3 exist
+
+    options.extend(selected)
+
+    return options[:4]  # ensure only 4 options
 
 # ---------------- Routes ----------------
 @app.route("/")
@@ -203,26 +216,11 @@ def home():
         greet = "Good evening"
     else:
         greet = "Good night"
-
     return render_template("index.html", avatar_url="/avatar", startup_greeting=greet)
 
 @app.route("/avatar")
 def avatar():
     return send_from_directory(AVATAR_PATH.parent, AVATAR_PATH.name)
-
-# Test Gemini
-@app.route("/test_gemini")
-def test_gemini():
-    if not gemini_client:
-        return jsonify({"ok": False, "error": "Gemini not configured"})
-    try:
-        r = gemini_client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=["Say hi in one sentence."]
-        )
-        return jsonify({"ok": True, "reply": r.text})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
 
 # Main Chat Route
 @app.route("/chat", methods=["POST"])
@@ -237,62 +235,65 @@ def chat():
     detected_name = extract_user_name(message)
     if detected_name:
         user_name = detected_name
-
-        # Try to use the friendly flute response from intents if available
         flute_reply = None
         for it in intents.get('intents', []):
             if it.get('tag') == 'love_flute_yes':
                 flute_reply = random.choice(it.get('responses', []))
                 break
-
         if not flute_reply:
             flute_reply = "That's wonderful! 🎵 It's great to meet someone who appreciates the soothing sound of the flute."
-
-        # Build greeting with name once
         bot_text = f"Hi {user_name}! {flute_reply}"
-
-        # Personalize (safe because personalize_reply won't duplicate the name)
         bot_text = personalize_reply(bot_text)
-
-        # Build options and return immediately
         options = build_options()
         options_json = [{"id": str(i+1), "label": sample_option_label(opt), "tag": opt.get("tag")} for i, opt in enumerate(options)]
         return jsonify({"bot_message": bot_text, "options": options_json})
 
     # Normal flow if no immediate name-intro
     try:
+        # Hardcoded exact trigger: "show me content"
+        msg_low = message.lower().strip()
+        if msg_low == "show me content" or msg_low == "videos":
+            # return the content_yes HTML directly from intents (ensures consistency)
+            content_html = get_response_from_intent_tag("content_yes")
+            options = build_options()
+            options_json = [{"id": str(i+1), "label": sample_option_label(opt), "tag": opt.get("tag")} for i, opt in enumerate(options)]
+            return jsonify({"bot_message": content_html, "options": options_json})
+
         if option_tag:
             bot_text = get_response_from_intent_tag(option_tag)
         else:
             if message:
-                ints = predict_class(message)
-                if ints:
-                    tag = ints[0]['intent']
-                    bot_text = get_response_from_intent_tag(tag)
+                # -------------------- Improved intent handling --------------------
+                # 1) Quick gibberish guard: if message has fewer than 2 alphabetic chars -> fallback
+                alphabetic_chars = sum(1 for c in message if c.isalpha())
+                if alphabetic_chars < 2:
+                    bot_text = local_fallback(message)
                 else:
-                    if gemini_client is not None:
-                        try:
-                            bot_text = generate_with_gemini(message)
-                        except Exception as e:
-                            print("[Gemini] generate failed, falling back to local_fallback. Error:", type(e).__name__, e)
+                    # 2) Run model prediction (default internal threshold still applied)
+                    ints = predict_class(message)
+                    if ints:
+                        top = ints[0]
+                        REQUIRED_CONFIDENCE = 0.55
+                        if top.get('probability', 0) >= REQUIRED_CONFIDENCE:
+                            tag = top['intent']
+                            bot_text = get_response_from_intent_tag(tag)
+                        else:
                             bot_text = local_fallback(message)
                     else:
                         bot_text = local_fallback(message)
+                # -------------------- end improved section --------------------
             else:
                 bot_text = "🎶 Say something and I'll sing back!"
 
-        # Personalize the bot_text for future replies (idempotent)
         bot_text = personalize_reply(bot_text)
 
     except Exception as e:
         traceback.print_exc()
         bot_text = "Sorry — server encountered an error. Try again."
 
-    # Build options and return
     options = build_options()
     options_json = [{"id": str(i+1), "label": sample_option_label(opt), "tag": opt.get("tag")} for i,opt in enumerate(options)]
     return jsonify({"bot_message": bot_text, "options": options_json})
-
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
