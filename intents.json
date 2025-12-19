@@ -1,35 +1,66 @@
 {
-  "intents": [
+  "user_responses": [
     {
       "tag": "greeting",
-      "patterns": ["hi", "hello", "hey", "hola", "namaste", "good day", "how are you", "is anyone there?"],
-      "responses": ["Namaste! 🎶 I am VenuBot — your musical companion. Do you love the sound of the flute?"],
-      "context": [""]
+      "patterns": ["hi", "hello", "hey", "hola", "namaste", "good day"],
+      "responses": [
+        "Namaste! 🎶 I am VenuBot — your musical companion. What’s your name?"
+      ]
+    },
+    {
+      "tag": "ask_name",
+      "patterns": ["", "say something", "start"],
+      "responses": [
+        "🎵 Say something and I’ll sing back! By the way, what’s your name?"
+      ]
     },
     {
       "tag": "love_flute_yes",
       "patterns": ["yes", "yeah", "yep", "of course", "definitely", "i love it", "i do"],
-      "responses": ["That's wonderful! 🎵 It's great to meet someone who appreciates the soothing sound of the flute."],
-      "context": [""]
+      "responses": [
+        "That's wonderful! 🎵 It's great to meet someone who appreciates the soothing sound of the flute."
+      ]
     },
     {
       "tag": "love_flute_no",
       "patterns": ["no", "nope", "not really", "nah", "not a fan"],
-      "responses": ["That’s okay! 😊 Maybe after chatting with me, you’ll start to enjoy the charm of the flute."],
-      "context": [""]
-    },
-    {
-      "tag": "goodbye",
-      "patterns": ["bye", "see you later", "goodbye", "talk to you later"],
-      "responses": ["🎵 Goodbye! May your days be filled with sweet melodies."],
-      "context": [""]
+      "responses": [
+        "That’s okay! 😊 Maybe after chatting with me, you’ll start to enjoy the charm of the flute."
+      ]
     },
     {
       "tag": "thanks",
       "patterns": ["thanks", "thank you", "that's helpful", "awesome, thanks"],
-      "responses": ["My pleasure! 🎶", "You're most welcome! 😊"],
-      "context": [""]
+      "responses": [
+        "My pleasure! 🎶",
+        "You're most welcome! 😊"
+      ]
     },
+    {
+      "tag": "goodbye",
+      "patterns": ["bye", "see you later", "goodbye", "talk to you later", "exit", "quit"],
+      "responses": [
+        "🎵 Goodbye! May your days be filled with sweet melodies."
+      ]
+    },
+
+    {
+      "tag": "content_yes",
+      "patterns": ["yes", "yeah", "sure", "please show", "show me", "yes please", "videos"],
+      "responses": [
+        "<div>Great — pick one to watch (I'll play it here):<br/><ol><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/Fvtlt47ShhE?si=3h8BEx8GCKiT5hg9\">1. Bansuri - Short 1</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/EyqqU48R-OM?si=oJo3GAqMy_GjccwM\">2. Bansuri - Short 2</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/OJdxDEIsP_0?si=CoeabMTIi3X2njzh\">3. Bansuri - Short 3</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/kXiRPqGMsY4?si=dDcrsWMXxj7RboB-\">4. Bansuri - Short 4</a></li></ol></div>"
+      ]
+    },
+    {
+      "tag": "content_no",
+      "patterns": ["no", "not now", "maybe later", "no thanks"],
+      "responses": [
+        "No problem — if you'd like later, just say 'show me content' and I'll bring them up. 🎵"
+      ]
+    }
+  ],
+
+  "question_bank": [
     {
       "tag": "flute_history",
       "patterns": [
@@ -40,183 +71,114 @@
       ],
       "responses": [
         "The flute is one of the oldest musical instruments known to humanity, dating back over 40,000 years! 🌍",
-        "Ancient flutes were found in China, Egypt, and India — made from bones and bamboo. Incredible, right? 🎵"
-      ],
-      "context": [""]
+        "Ancient flutes were found in China, Egypt, and India — made from bones and bamboo. 🎵"
+      ]
     },
     {
       "tag": "indian_flute_players",
       "patterns": [
         "who are some famous indian flute players",
         "famous bansuri players",
-        "renowned flute players in india",
-        "who is the best flute player in india"
+        "best flute player in india"
       ],
       "responses": [
-        "Some of the greatest Indian flute maestros include Pandit Hariprasad Chaurasia, Pannalal Ghosh, and Rakesh Chaurasia. 🎶",
-        "Pandit Hariprasad Chaurasia is world-famous for bringing the bansuri to the global stage. 🌏"
-      ],
-      "context": [""]
+        "Pandit Hariprasad Chaurasia, Pannalal Ghosh, and Rakesh Chaurasia are legendary Indian flute maestros. 🎶"
+      ]
     },
     {
       "tag": "flute_in_mythology",
       "patterns": [
-        "how is flute related to hindu mythology",
-        "what is the role of flute in hinduism",
-        "what is the story of krishna and flute"
+        "krishna and flute",
+        "story of krishna flute",
+        "role of flute in hindu mythology"
       ],
       "responses": [
-        "In Hindu mythology, Lord Krishna’s flute, the 'Murali', symbolizes divine love and the power to attract souls. 💫",
-        "Krishna’s flute enchanted everyone — humans, animals, and even nature itself. 🌿"
-      ],
-      "context": [""]
+        "In Hindu mythology, Lord Krishna’s flute symbolizes divine love and attraction. 💫"
+      ]
     },
     {
       "tag": "ragas_info",
       "patterns": [
-        "what are ragas",
+        "what is a raga",
         "explain ragas",
-        "how do ragas work",
-        "what is a raga"
+        "how do ragas work"
       ],
       "responses": [
-        "A 'Raga' is a melodic framework in Indian classical music used for improvisation and expression. 🎼",
-        "Ragas are like moods or colors of music — each one evokes a specific feeling or time of day. 🌅"
-      ],
-      "context": [""]
+        "A raga is a melodic framework in Indian classical music, each evoking a specific mood and time of day. 🎼"
+      ]
     },
     {
       "tag": "fun_fact",
       "patterns": [
         "tell me a fun fact about the flute",
-        "give me a flute fact",
         "flute trivia",
         "fun flute facts"
       ],
       "responses": [
-        "🎶 Did you know? The modern concert flute can play more than three octaves — that's over 36 notes!",
-        "Fun fact: The flute is the only woodwind instrument that doesn’t actually use a reed. It’s all breath and magic! 💨✨"
-      ],
-      "context": [""]
+        "🎶 Fun fact: The flute is the only woodwind instrument that doesn’t use a reed!"
+      ]
     },
     {
       "tag": "bansuri_materials",
       "patterns": [
         "what is bansuri made of",
-        "bansuri material",
-        "which bamboo is used for making flute",
-        "how is a bansuri constructed"
+        "which bamboo is used for flute"
       ],
       "responses": [
-        "Traditional bansuris are made from strong, straight bamboo such as Assam or Pahadi bamboo. The maker measures holes and nodes carefully — craftsmanship matters! 🎋"
-      ],
-      "context": [""]
+        "Traditional bansuris are crafted from strong bamboo like Assam or Pahadi bamboo. 🎋"
+      ]
     },
     {
       "tag": "bansuri_types",
       "patterns": [
         "types of bansuri",
-        "kinds of indian flutes",
-        "how many types of bansuri",
-        "difference between north indian flute and south indian flute"
+        "difference between north and south indian flute"
       ],
       "responses": [
-        "North Indian bansuri (Hindustani) is side-blown with 6–7 holes; South Indian venu (Carnatic) often has 8 holes and a slightly different fingering and tonal quality. 🎵"
-      ],
-      "context": [""]
+        "North Indian bansuri usually has 6–7 holes, while South Indian venu often has 8 holes. 🎵"
+      ]
     },
     {
       "tag": "bansuri_care",
       "patterns": [
         "how to take care of a bansuri",
-        "bansuri maintenance",
-        "how to store a flute",
-        "tips to protect bansuri"
+        "bansuri maintenance"
       ],
       "responses": [
-        "Keep your bansuri dry and away from extreme heat. Wrap in cloth or use a case. Avoid leaving it in cars or direct sunlight. 🌿"
-      ],
-      "context": [""]
-    },
-    {
-      "tag": "flute_raags",
-      "patterns": [
-        "best ragas for flute",
-        "which raga sounds good on bansuri",
-        "flute ragas",
-        "ragas played on flute"
-      ],
-      "responses": [
-        "Ragas like Yaman, Bhupali, Hamsadhwani and Brindavani Sarang sound beautiful on the bansuri. Pahadi and Durga are also lovely for flute. 🎼"
-      ],
-      "context": [""]
+        "Keep your bansuri dry, away from heat, and store it wrapped in cloth or a case. 🌿"
+      ]
     },
     {
       "tag": "bansuri_learning",
       "patterns": [
         "how to learn bansuri",
-        "how can i start learning flute",
-        "tips to learn bansuri",
         "is bansuri hard to learn"
       ],
       "responses": [
-        "Start with breath control, basic notes (Sa Re Ga), and short daily practice. Breathe slowly and practice long notes to build control. 🌬️"
-      ],
-      "context": [""]
+        "Start with breath control, basic notes, and short daily practice sessions. 🌬️"
+      ]
     },
     {
       "tag": "bansuri_frequencies",
       "patterns": [
-        "what is c sharp flute",
-        "best scale for beginners",
         "which flute scale should i buy",
-        "bansuri scales explained"
+        "best flute for beginners"
       ],
       "responses": [
-        "Beginners often choose a C or C# medium bansuri. Lower (D, C) are deeper; higher (A, B) are brighter. Choose based on comfort and vocal range. 🎶"
-      ],
-      "context": [""]
-    },
-    {
-      "tag": "krishna_flute",
-      "patterns": [
-        "krishna flute facts",
-        "story behind krishna flute",
-        "why is krishna shown with flute",
-        "krishna and bansuri"
-      ],
-      "responses": [
-        "Krishna’s Murali symbolizes divine love — its music is said to enchant nature and beings. The flute represents an invitation to beauty and devotion. 💙"
-      ],
-      "context": [""]
+        "Beginners usually start with a C or C# medium bansuri for better comfort. 🎶"
+      ]
     },
     {
       "tag": "flute_benefits",
       "patterns": [
         "benefits of playing flute",
-        "why should i learn bansuri",
-        "is flute good for health",
-        "advantages of flute playing"
+        "is flute good for health"
       ],
       "responses": [
-        "Playing flute strengthens breath control, reduces stress, improves focus and brings emotional calm. It's musical therapy. ✨"
-      ],
-      "context": [""]
-    },
-    {
-      "tag": "content_yes",
-      "patterns": ["yes", "yeah", "sure", "please show", "show me", "yes please"],
-      "responses": [
-        "<div>Great — pick one to watch (I'll play it here):<br/><ol><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/Fvtlt47ShhE?si=3h8BEx8GCKiT5hg9\">1. Bansuri - Short 1</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/EyqqU48R-OM?si=oJo3GAqMy_GjccwM\">2. Bansuri - Short 2</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/OJdxDEIsP_0?si=CoeabMTIi3X2njzh\">3. Bansuri - Short 3</a></li><li><a class=\"yt-short\" href=\"https://youtube.com/shorts/kXiRPqGMsY4?si=dDcrsWMXxj7RboB-\">4. Bansuri - Short 4</a></li></ol></div>"
-      ],
-      "context": [""]
-    },
-    {
-      "tag": "content_no",
-      "patterns": ["no", "not now", "maybe later", "no thanks"],
-      "responses": ["No problem — if you'd like later, just say 'show me content' and I'll bring them up. 🎵"],
-      "context": [""]
+        "Playing the flute improves lung capacity, focus, and helps reduce stress. ✨"
+      ]
     }
   ]
 }
+
 
