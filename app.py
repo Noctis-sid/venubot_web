@@ -5,10 +5,12 @@ import json
 import pickle
 import numpy as np
 import nltk
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from nltk.stem import WordNetLemmatizer
 from keras.models import load_model
 from pathlib import Path
-from datetime import datetime
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
 # ---------------- App setup ----------------
@@ -117,12 +119,24 @@ def option_label(intent):
         return "Show me related videos"
     return intent["patterns"][0].capitalize()
 
+def get_time_based_greeting():
+    now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur"))
+    hour = now.hour
+
+    if hour < 12:
+        return "Good morning"
+    elif hour < 17:
+        return "Good afternoon"
+    else:
+        return "Good evening"
+
+
 # ---------------- Routes ----------------
 @app.route("/")
 def home():
-    hour = datetime.now().hour
-    greet = "Good morning" if hour < 12 else "Good afternoon" if hour < 17 else "Good evening"
+    greet = get_time_based_greeting()
     return render_template("index.html", avatar_url="/avatar", startup_greeting=greet)
+
 
 @app.route("/avatar")
 def avatar():
